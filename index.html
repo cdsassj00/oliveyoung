@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>Learning Roadmap Editor</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -160,70 +162,71 @@ html,body{height:100%;overflow:hidden;background:#0f1a1a;font-family:'Noto Sans 
 /* ══════════════════════════════════════════════════
    SLIDE 3 — 연간 교육 계획 캘린더
 ══════════════════════════════════════════════════ */
-.annual-wrap{width:100%;height:100%;padding:4px 12px;overflow:hidden;}
-.annual-tbl{width:100%;height:100%;border-collapse:separate;border-spacing:2px;table-layout:fixed;}
-.annual-tbl colgroup col.col-cat{width:108px;}
-.annual-tbl colgroup col.col-name{width:154px;}
-.annual-tbl colgroup col.col-type{width:54px;}
-.annual-tbl colgroup col.col-m{/* auto, 12 cols */}
-.ath{background:#1e2c2c;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.3px;text-align:center;padding:4px 2px;border-radius:5px;}
-.ath.cat-hdr{font-size:11px;}
+.annual-wrap{width:100%;height:100%;padding:4px 10px;overflow:hidden;}
+.annual-tbl{width:100%;height:1px;border-collapse:separate;border-spacing:2px;table-layout:fixed;}
+.annual-tbl colgroup col.col-cat{width:135px;}
+.annual-tbl colgroup col.col-name{width:210px;}
+.annual-tbl colgroup col.col-type{width:78px;}
+.annual-tbl colgroup col.col-m{/* auto, 12 cols share remaining ~1490px ≈ 124px each */}
+.ath{background:#1e2c2c;color:#fff;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:700;letter-spacing:.3px;text-align:center;padding:5px 2px;border-radius:5px;}
+.ath.cat-hdr{font-size:14px;}
 .atd-cat{
   background:#1a7c6e;color:#fff;border-radius:7px;
   text-align:center;vertical-align:middle;
-  font-size:12px;font-weight:700;letter-spacing:.3px;
-  padding:3px 4px;line-height:1.25;
+  font-size:15px;font-weight:700;letter-spacing:.3px;
+  padding:4px 5px;line-height:1.25;
 }
 .atd-name{
   background:rgba(255,255,255,.65);border-radius:7px;
-  vertical-align:middle;padding:2px 5px;
-  font-size:12px;font-weight:600;color:#1e2c2c;
+  vertical-align:middle;padding:3px 6px;
+  font-size:14px;font-weight:600;color:#1e2c2c;
 }
 .atd-type{
   background:rgba(255,255,255,.4);border-radius:7px;
   vertical-align:middle;text-align:center;
-  font-size:10px;font-weight:600;color:#3a6060;
-  padding:2px;line-height:1.2;
+  font-size:13px;font-weight:600;color:#3a6060;
+  padding:2px;line-height:1.25;
 }
 .atd-m{
   border-radius:5px;vertical-align:middle;text-align:center;
-  font-size:10px;font-weight:600;color:#1e2c2c;
+  font-size:11px;font-weight:600;color:#1e2c2c;
   padding:1px;line-height:1.2;cursor:text;
 }
-.atd-m.active{background:rgba(26,124,110,.22);}
-.atd-m.strong{background:#1a7c6e;color:#fff;font-size:10px;}
-.atd-m.light{background:rgba(26,124,110,.04);}
-.atd-m.light:hover{background:rgba(26,124,110,.12);outline:1px dashed rgba(26,124,110,.35);}
-.atd-m.light:focus{background:rgba(255,255,255,.85);outline:2px solid rgba(61,191,176,.75);}
+.atd-m.active{color:#2a4040;}
+.atd-m.strong{color:#1a2828;font-weight:700;}
+.atd-m.light{background:rgba(0,0,0,.02);}
+.atd-m.light:hover{background:rgba(0,0,0,.06);outline:1px dashed rgba(26,124,110,.3);}
+.atd-m.light:focus{background:rgba(255,255,255,.9);outline:2px solid rgba(61,191,176,.7);}
 
 /* ══════════════════════════════════════════════════
    SLIDES 5~8 — 카테고리 상세 카드
 ══════════════════════════════════════════════════ */
-.catd-grid{display:grid;gap:10px;padding:10px 18px;height:100%;}
+.catd-grid{display:grid;gap:8px;padding:8px 16px;height:100%;}
 .catd-card{
-  background:rgba(255,255,255,.7);border-radius:12px;
-  padding:14px 16px;display:flex;flex-direction:column;gap:6px;
-  border-left:6px solid #1a7c6e;
+  background:rgba(255,255,255,.7);border-radius:10px;
+  padding:8px 12px;display:flex;flex-direction:column;gap:3px;
+  border-left:5px solid #1a7c6e;
   box-shadow:0 2px 8px rgba(26,124,110,.08);
   overflow:hidden;
 }
-.catd-card-name{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:#1e2c2c;line-height:1.2;margin-bottom:2px;}
-.catd-card-type-badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;letter-spacing:.5px;margin-bottom:2px;}
+.catd-top-row{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.catd-card-name{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:800;color:#1e2c2c;line-height:1.15;flex:1;min-width:0;}
+.catd-card-type-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;letter-spacing:.5px;}
 .catd-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.catd-meta-item{display:flex;align-items:center;gap:3px;font-size:16px;color:#3a6060;}
-.catd-meta-label{font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;color:#7aacac;letter-spacing:.5px;text-transform:uppercase;}
-.catd-owners{display:flex;gap:5px;margin-top:2px;cursor:pointer;padding:2px 4px;border-radius:6px;transition:.15s;}
-.catd-owners:hover{background:rgba(26,124,110,.1);}
-.catd-owner-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif;}
-.catd-owner-dot.sub{outline:2.5px solid rgba(255,255,255,.7);}
-.catd-content{font-size:18px;color:#3a5050;line-height:1.5;margin-top:3px;border-top:1px solid rgba(26,124,110,.12);padding-top:5px;}
+.catd-meta-item{display:flex;align-items:center;gap:3px;font-size:15px;color:#3a6060;}
+.catd-meta-label{font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;color:#7aacac;letter-spacing:.5px;text-transform:uppercase;}
+.catd-owners{display:flex;gap:3px;cursor:pointer;padding:1px 3px;border-radius:6px;transition:.15s;flex-shrink:0;}
+.catd-owners:hover{background:rgba(26,124,110,.12);}
+.catd-owner-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif;}
+.catd-owner-dot.sub{outline:2px solid rgba(255,255,255,.7);}
+.catd-content{font-size:16px;color:#3a5050;line-height:1.45;border-top:1px solid rgba(26,124,110,.1);padding-top:3px;flex:1;overflow:hidden;}
 .catd-section-header{
   background:#1a7c6e;color:#fff;border-radius:10px;
-  padding:10px 18px;display:flex;align-items:center;gap:14px;
-  font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;letter-spacing:1.5px;
+  padding:8px 16px;display:flex;align-items:center;gap:12px;
+  font-family:'Montserrat',sans-serif;font-size:20px;font-weight:800;letter-spacing:1.5px;
   grid-column:1/-1;
 }
-.catd-section-count{background:rgba(255,255,255,.2);border-radius:999px;padding:4px 12px;font-size:14px;}
+.catd-section-count{background:rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;font-size:13px;}
 
 /* ══════════════════════════════════════════════════
    SLIDE 1 — pixel-accurate VALUE SYSTEM
@@ -376,42 +379,63 @@ html,body{height:100%;overflow:hidden;background:#0f1a1a;font-family:'Noto Sans 
 /* shared shell already defined above */
 /* R&R Table */
 .rr-tbl-wrap{position:absolute;top:130px;left:18px;right:18px;bottom:6px;overflow-y:auto;overflow-x:hidden;}
-.rr-tbl{width:100%;border-collapse:separate;border-spacing:2px;table-layout:fixed;}
+.rr-tbl{width:100%;height:1px;border-collapse:separate;border-spacing:1px;table-layout:fixed;}
+.rr-tbl td,.rr-tbl th{height:auto;max-height:none;}
 .rr-th{
-  background:#1e2c2c;color:#fff;border-radius:6px;
+  background:#1e2c2c;color:#fff;border-radius:4px;
   font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.3px;
-  text-align:center;vertical-align:middle;padding:5px 3px;
+  text-align:center;vertical-align:middle;padding:2px 2px;line-height:1.15;
 }
 .rr-th.teal{background:#1a7c6e;}
 .rr-th.pill{border-radius:999px;}
-.rr-cat1{background:#1a7c6e;color:#fff;border-radius:6px;font-weight:800;text-align:center;vertical-align:middle;padding:5px;line-height:1.3;}
-.rr-cat2{background:rgba(26,124,110,.15);border:1px solid rgba(26,124,110,.3);border-radius:6px;font-weight:700;color:#1a4040;text-align:center;vertical-align:middle;padding:4px;line-height:1.3;}
-.rr-task{background:rgba(255,255,255,.65);border-radius:6px;padding:4px 7px;vertical-align:middle;}
-.rr-task-name{font-weight:700;color:#1a2e2e;line-height:1.35;}
-.rr-target{background:rgba(255,255,255,.5);border-radius:6px;color:#2c4040;text-align:center;vertical-align:middle;padding:4px;line-height:1.35;}
-.rr-content{background:rgba(255,255,255,.5);border-radius:6px;color:#2c4040;vertical-align:middle;padding:4px 6px;line-height:1.5;}
-.rr-cycle{background:rgba(42,157,143,.12);border-radius:6px;font-weight:700;color:#1a5050;text-align:center;vertical-align:middle;font-family:'Montserrat',sans-serif;padding:4px;}
-.rr-owner-cell{background:rgba(255,255,255,.4);border-radius:6px;text-align:center;vertical-align:middle;padding:3px;}
+.rr-cat1{background:#1a7c6e;color:#fff;border-radius:4px;font-weight:800;text-align:center;vertical-align:middle;padding:1px 2px;line-height:1.15;}
+.rr-cat2{background:rgba(26,124,110,.15);border:1px solid rgba(26,124,110,.3);border-radius:4px;font-weight:700;color:#1a4040;text-align:center;vertical-align:middle;padding:1px;line-height:1.15;}
+.rr-task{background:rgba(255,255,255,.65);border-radius:4px;padding:1px 4px;vertical-align:middle;}
+.rr-task-name{font-weight:700;color:#1a2e2e;line-height:1.15;}
+.rr-target{background:rgba(255,255,255,.5);border-radius:4px;color:#2c4040;text-align:center;vertical-align:middle;padding:1px 2px;line-height:1.15;}
+.rr-content{background:rgba(255,255,255,.5);border-radius:4px;color:#2c4040;vertical-align:middle;padding:1px 4px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.rr-cycle{background:rgba(42,157,143,.12);border-radius:4px;font-weight:700;color:#1a5050;text-align:center;vertical-align:middle;font-family:'Montserrat',sans-serif;padding:1px;}
+.rr-owner-cell{background:rgba(255,255,255,.4);border-radius:4px;text-align:center;vertical-align:middle;padding:0px;}
 .rr-owner-cell.main-cell{background:rgba(26,124,110,.12);}
-.rr-dot{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif;margin:1px;}
-.rr-dot.sub-dot{width:26px;height:26px;font-size:11px;outline:2px solid rgba(255,255,255,.7);}
+.rr-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif;margin:0;}
+.rr-dot.sub-dot{width:18px;height:18px;font-size:8px;outline:1.5px solid rgba(255,255,255,.7);}
+.rr-tbl [contenteditable]:focus{outline:1.5px solid rgba(61,191,176,.7);border-radius:3px;background:rgba(255,255,255,.15);padding:inherit;}
+.rr-tbl [contenteditable]:hover{outline:1px dashed rgba(61,191,176,.3);border-radius:3px;}
 .rr-legend{position:absolute;top:92px;right:20px;background:rgba(255,255,255,.92);border:1.5px solid rgba(26,124,110,.2);border-radius:10px;padding:5px 10px;z-index:10;display:flex;gap:10px;align-items:center;}
 .rr-legend-item{display:flex;align-items:center;gap:4px;font-size:13px;color:#2c4040;font-weight:600;}
 
 
 /* ══ PRINT / PDF ══════════════════════════════════ */
 @media print {
-  @page { size: 1920px 1080px landscape; margin: 0; }
-  html,body { width:1920px!important; height:auto!important; overflow:visible!important; background:#fff!important; }
-  .app,.topbar,.panel-l,.panel-r,.zoombar,.fs,.ctx,.modal-bg,.toast { display:none!important; }
-  #print-frame { display:block!important; position:static!important; left:auto!important; width:1920px!important; height:auto!important; overflow:visible!important; }
-  .print-slide {
-    width:1920px!important; height:1080px!important;
-    page-break-after:always; break-after:page;
-    overflow:hidden!important; position:relative!important;
-    display:block!important;
+  @page { size: landscape; margin: 0; }
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
-  .print-slide:last-child { page-break-after:avoid; break-after:avoid; }
+  html,body {
+    width: 100% !important; height: auto !important;
+    overflow: visible !important; background: #fff !important;
+    margin: 0 !important; padding: 0 !important;
+  }
+  .app, .topbar, .panel-l, .panel-r, .zoombar, .fs, .ctx, .modal-bg, .toast, #catOwnerPicker { display: none !important; }
+  #print-frame {
+    display: block !important; position: static !important;
+    width: 100vw !important; overflow: visible !important;
+  }
+  .print-slide {
+    width: 100vw !important; height: 100vh !important;
+    overflow: hidden !important; position: relative !important;
+    display: block !important;
+    page-break-after: always; break-after: page;
+  }
+  .print-slide:last-child { page-break-after: avoid; break-after: avoid; }
+  .print-slide-inner {
+    width: 1920px; height: 1080px;
+    transform-origin: top left;
+    transform: scale(var(--print-scale, 0.52));
+    position: absolute; top: 0; left: 0;
+  }
 }
 #print-frame { display:none; }
 </style>
@@ -522,6 +546,11 @@ html,body{height:100%;overflow:hidden;background:#0f1a1a;font-family:'Noto Sans 
 </div>
 
 <div class="toast" id="toast">클릭 수정 · Enter 완료 · 우클릭 색상/삭제</div>
+<div class="pdf-progress" id="pdfProg" style="display:none">
+  <div class="pp-title">PDF 생성 중</div>
+  <div class="pp-bar"><div class="pp-fill" id="pdfFill" style="width:0%"></div></div>
+  <div class="pp-text" id="pdfText">준비 중...</div>
+</div>
 
 <script>
 /* ══════════════════════════════════════
@@ -700,10 +729,10 @@ const DEF=[
    ]},
   ]
  }},
- {id:'s4',label:'업무 R&R',type:'rrmap',data:{
+ {id:'s4a',label:'R&R (1/2)',type:'rrmap',data:{
   topSub:'브사본의 미래를 여는 열쇠 , 교육과 성장을 위한 로드맵',
   topTitle:'업무별 R&R',topDate:'2024.10.01',
-  subtitle:'브랜드사업본부 교육파트 업무 분장',
+  subtitle:'브랜드사업본부 교육파트 업무 분장 (1/2)',
   groups:[
    {cat:'교육 기획',items:[
     {cat2:'-',task:'연간교육계획수립',target:'-',content:'본부 전략 下, 세일즈 강화 및 구성원 역량 강화를 위한 연간 교육 계획 수립 및 과정 개발',cycle:'연',owners:['ye'],cosub:''}
@@ -744,6 +773,13 @@ const DEF=[
     {cat2:'온라인',task:'온보딩 슬랙 운영',target:'본부 신규 입사자',content:'(신설) 신규 입사자 온보딩 및 소통을 위한 슬랙 채널 운영',cycle:'월',owners:['ram'],cosub:'김혜경'},
     {cat2:'온/오프라인',task:'기타 이벤트성 교육',target:'교육별 상이',content:'본부 내 니즈에 따른 비정기적 교육계획수립/과정개발/진행/운영 (브랜드원교육, 리더십함양교육 등)',cycle:'비정기',owners:['ye','ram','yeon'],cosub:''},
    ]},
+  ]
+ }},
+ {id:'s4b',label:'R&R (2/2)',type:'rrmap',data:{
+  topSub:'브사본의 미래를 여는 열쇠 , 교육과 성장을 위한 로드맵',
+  topTitle:'업무별 R&R',topDate:'2024.10.01',
+  subtitle:'브랜드사업본부 교육파트 업무 분장 (2/2)',
+  groups:[
    {cat:'교육 운영 관리',items:[
     {cat2:'-',task:'관리품 발주관리',target:'-',content:'국내/외 세일즈 교육 진행을 위한 관리품 발주 및 재고 현황 정기 관리',cycle:'월',owners:['yeon'],cosub:'성중현'},
     {cat2:'-',task:'교육비용결산',target:'-',content:'교육 예산 관리, 월 별 사용 내역 집행',cycle:'월',owners:['yeon'],cosub:'김우람'},
@@ -997,6 +1033,14 @@ function bindShell(d){
 }
 
 /* ══ SLIDE 3 BUILD — 연간 교육 계획 캘린더 ══ */
+/* Convert hex color to pastel versions */
+function hexToPastel(hex,strength){
+  // strength: 0.2 = very light, 0.4 = medium pastel
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  const mix=(c,s)=>Math.round(c*s+255*(1-s));
+  return `rgb(${mix(r,strength)},${mix(g,strength)},${mix(b,strength)})`;
+}
+
 function buildAnnual(d){
   const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   // Count total rows for height calc
@@ -1004,6 +1048,8 @@ function buildAnnual(d){
   
   let tbody='';
   d.groups.forEach((g,gi)=>{
+    const pStrong=hexToPastel(g.color||'#1a7c6e',0.45);
+    const pActive=hexToPastel(g.color||'#1a7c6e',0.25);
     g.rows.forEach((row,ri)=>{
       const isFirst=ri===0;
       tbody+=`<tr>`;
@@ -1017,10 +1063,11 @@ function buildAnnual(d){
         const note=row.notes&&row.notes[m];
         let cls='atd-m';
         let content='';
-        if(active&&note){cls+=' strong';content=note;}
-        else if(active){cls+=' active';content='●';}
+        let sty='';
+        if(active&&note){cls+=' strong';content=note;sty=`background:${pStrong};color:#1a2828;font-weight:700`;}
+        else if(active){cls+=' active';content='●';sty=`background:${pActive};color:#2a4040`;}
         else{cls+=' light';}
-        tbody+=`<td class="${cls}" contenteditable="true" data-gk="month" data-gi="${gi}" data-ri="${ri}" data-m="${m}" spellcheck="false">${content}</td>`;
+        tbody+=`<td class="${cls}" style="${sty}" contenteditable="true" data-gk="month" data-gi="${gi}" data-ri="${ri}" data-m="${m}" spellcheck="false">${content}</td>`;
       }
       tbody+=`</tr>`;
     });
@@ -1086,13 +1133,15 @@ function buildCatDetail(d){
       const bg=typeBg[item.type]||typeBg['-'];
       const fg=typeFg[item.type]||typeFg['-'];
       html+=`<div class="catd-card" style="border-left-color:${accent}">
-        <div class="catd-card-name" contenteditable="true" spellcheck="false" data-cdk="name" data-si="${si}" data-ii="${ii}">${item.name}</div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <span class="catd-card-type-badge" style="background:${bg};color:${fg}" contenteditable="true" spellcheck="false" data-cdk="type" data-si="${si}" data-ii="${ii}">${item.type}</span>
-          <span style="font-size:17px;color:#5a7070"><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;color:#7aacac;text-transform:uppercase">대상</span> <span contenteditable="true" spellcheck="false" data-cdk="target" data-si="${si}" data-ii="${ii}">${item.target||'-'}</span></span>
-          <span style="font-size:17px;color:#5a7070"><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;color:#7aacac;text-transform:uppercase">주기</span> <span contenteditable="true" spellcheck="false" data-cdk="cycle" data-si="${si}" data-ii="${ii}">${item.cycle}</span></span>
+        <div class="catd-top-row">
+          <div class="catd-card-name" contenteditable="true" spellcheck="false" data-cdk="name" data-si="${si}" data-ii="${ii}">${item.name}</div>
+          <div class="catd-owners" data-cosi="${si}" data-coii="${ii}" title="클릭하여 담당자 변경">${ownerDots}${coOwnerDot}${!ownerDots&&!coOwnerDot?'<span style="font-size:9px;color:#aaa">+</span>':''}</div>
         </div>
-        <div class="catd-owners" data-cosi="${si}" data-coii="${ii}" title="클릭하여 담당자 변경">${ownerDots}${coOwnerDot}${!ownerDots&&!coOwnerDot?'<span style="font-size:9px;color:#aaa;font-style:italic">+ 담당자</span>':''}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="catd-card-type-badge" style="background:${bg};color:${fg}" contenteditable="true" spellcheck="false" data-cdk="type" data-si="${si}" data-ii="${ii}">${item.type}</span>
+          <span style="font-size:15px;color:#5a7070"><span style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;color:#7aacac;text-transform:uppercase">대상</span> <span contenteditable="true" spellcheck="false" data-cdk="target" data-si="${si}" data-ii="${ii}">${item.target||'-'}</span></span>
+          <span style="font-size:15px;color:#5a7070"><span style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;color:#7aacac;text-transform:uppercase">주기</span> <span contenteditable="true" spellcheck="false" data-cdk="cycle" data-si="${si}" data-ii="${ii}">${item.cycle}</span></span>
+        </div>
         <div class="catd-content" contenteditable="true" spellcheck="false" data-cdk="content" data-si="${si}" data-ii="${ii}">${item.content||''}</div>
       </div>`;
     });
@@ -1110,13 +1159,13 @@ function buildCatDetail(d){
     <div class="shell-badge" contenteditable="true" data-shk="badge" spellcheck="false">${d.badge||''}</div>
   </div>
   <div class="shell-body">
-    <div style="position:absolute;top:6px;right:18px;display:flex;gap:10px;align-items:center;z-index:10;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 12px">
-      ${OWNERS.map(o=>`<div style="display:flex;align-items:center;gap:5px;font-size:14px;color:rgba(255,255,255,.9)">
-        <div style="width:22px;height:22px;border-radius:50%;background:${o.bg};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;font-family:Montserrat,sans-serif">${o.char}</div>
+    <div style="position:absolute;top:4px;right:16px;display:flex;gap:8px;align-items:center;z-index:10;background:rgba(255,255,255,.12);border-radius:6px;padding:3px 10px">
+      ${OWNERS.map(o=>`<div style="display:flex;align-items:center;gap:3px;font-size:12px;color:rgba(255,255,255,.85)">
+        <div style="width:18px;height:18px;border-radius:50%;background:${o.bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;font-family:Montserrat,sans-serif">${o.char}</div>
         ${o.label}</div>`).join('')}
-      <div style="font-size:13px;color:rgba(255,255,255,.7);padding-left:8px;border-left:1px solid rgba(255,255,255,.2);font-weight:600">● 주담당 ◐ 부담당</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);padding-left:6px;border-left:1px solid rgba(255,255,255,.2);font-weight:600">● 주 ◐ 부</div>
     </div>
-    <div class="catd-grid" style="grid-template-columns:repeat(${COLS},1fr);padding-top:44px;overflow-y:auto;align-content:start">
+    <div class="catd-grid" style="grid-template-columns:repeat(${COLS},1fr);padding-top:36px;overflow-y:auto;align-content:start">
       ${html}
     </div>
   </div>
@@ -1125,17 +1174,21 @@ function buildCatDetail(d){
 
 /* ══ SLIDE 4 BUILD — R&R (업무 분장) ══ */
 const RR_COL_DEFAULTS=[
-  {name:'분류',    w:140, fs:15},
-  {name:'방식',    w:105, fs:14},
-  {name:'주요항목', w:220, fs:15},
-  {name:'대상',    w:160, fs:14},
-  {name:'세부내용', w:0,   fs:14},
-  {name:'주기',    w:80,  fs:14},
-  {name:'주담당',  w:100, fs:14},
-  {name:'부담당',  w:100, fs:14},
+  {name:'분류',    w:130, fs:13},
+  {name:'방식',    w:90,  fs:12},
+  {name:'주요항목', w:200, fs:13},
+  {name:'대상',    w:145, fs:12},
+  {name:'세부내용', w:0,   fs:12},
+  {name:'주기',    w:72,  fs:12},
+  {name:'주담당',  w:90,  fs:12},
+  {name:'부담당',  w:90,  fs:12},
 ];
 function rrCols(d){
-  if(!d.colCfg||d.colCfg.length!==8){d.colCfg=JSON.parse(JSON.stringify(RR_COL_DEFAULTS));}
+  // Reset if missing, wrong length, or old version
+  if(!d.colCfg||d.colCfg.length!==8||!d._colVer||d._colVer<3){
+    d.colCfg=JSON.parse(JSON.stringify(RR_COL_DEFAULTS));
+    d._colVer=3;
+  }
   return d.colCfg;
 }
 
@@ -1897,35 +1950,59 @@ function flash(){
 }
 
 /* ══ PDF DOWNLOAD ══ */
-function downloadPDF(){
+async function downloadPDF(){
+  const prog=document.getElementById('pdfProg');
+  const fill=document.getElementById('pdfFill');
+  const text=document.getElementById('pdfText');
+  prog.style.display='block';
+  fill.style.width='0%';
+  text.textContent='렌더링 준비 중...';
+
   const frame=document.getElementById('print-frame');
   frame.innerHTML='';
-  /* Render offscreen so browser computes layout without showing to user */
-  frame.style.cssText='display:block;position:absolute;left:-9999px;top:0;width:1920px;background:#fff;';
+  frame.style.cssText='display:block;position:fixed;left:0;top:0;width:1920px;height:1080px;z-index:-9999;opacity:0;pointer-events:none;overflow:hidden;';
 
-  slides.forEach((s,i)=>{
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:[285.75,508]});
+
+  for(let i=0;i<slides.length;i++){
+    const s=slides[i];
+    fill.style.width=Math.round((i/slides.length)*100)+'%';
+    text.textContent=`슬라이드 ${i+1}/${slides.length} 캡처 중...`;
+
+    frame.innerHTML='';
     const div=document.createElement('div');
-    div.className='print-slide';
-    div.style.cssText='width:1920px;height:1080px;overflow:hidden;position:relative;page-break-after:always;break-after:page;';
+    div.style.cssText='width:1920px;height:1080px;overflow:hidden;position:relative;';
     if(s.type==='value')    div.innerHTML=buildS1(s.data);
     if(s.type==='roadmap')  div.innerHTML=buildS2(s.data);
     if(s.type==='annual')   div.innerHTML=buildAnnual(s.data);
     if(s.type==='rrmap')    div.innerHTML=buildS3(s.data);
     if(s.type==='catdetail')div.innerHTML=buildCatDetail(s.data);
     frame.appendChild(div);
-  });
 
-  document.fonts.ready.then(()=>{
-    requestAnimationFrame(()=>{
-      setTimeout(()=>{
-        window.print();
-        setTimeout(()=>{
-          frame.innerHTML='';
-          frame.style.cssText='display:none;';
-        },1500);
-      },600);
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    await document.fonts.ready;
+    await new Promise(r=>setTimeout(r,250));
+
+    const canvas=await html2canvas(div,{
+      width:1920,height:1080,scale:1.5,
+      useCORS:true,allowTaint:true,
+      backgroundColor:'#ffffff',logging:false,
     });
-  });
+
+    const imgData=canvas.toDataURL('image/jpeg',0.92);
+    if(i>0) pdf.addPage([285.75,508],'landscape');
+    pdf.addImage(imgData,'JPEG',0,0,508,285.75);
+  }
+
+  fill.style.width='100%';
+  text.textContent='PDF 저장 중...';
+  await new Promise(r=>setTimeout(r,100));
+  pdf.save('Learning_Roadmap.pdf');
+
+  frame.innerHTML='';
+  frame.style.cssText='display:none;';
+  setTimeout(()=>{prog.style.display='none';},1200);
 }
 
 /* ══ (슬라이드 추가 비활성화 — 향후 자료 기반 생성) ══ */

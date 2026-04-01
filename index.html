@@ -1958,41 +1958,65 @@ async function downloadPDF(){
   fill.style.width='0%';
   text.textContent='렌더링 준비 중...';
 
+  /* 16:9 = 338.667mm x 190.5mm (standard widescreen) */
+  const pW=338.667, pH=190.5;
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:[pH,pW]});
+
+  /* 오프스크린 컨테이너: 실제로 보이게 렌더링해야 html2canvas가 정상 작동 */
   const frame=document.getElementById('print-frame');
   frame.innerHTML='';
-  frame.style.cssText='display:block;position:fixed;left:0;top:0;width:1920px;height:1080px;z-index:-9999;opacity:0;pointer-events:none;overflow:hidden;';
+  frame.style.cssText='display:block;position:fixed;left:-9999px;top:0;width:1920px;height:1080px;z-index:99999;overflow:hidden;pointer-events:none;background:#fff;';
 
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:[285.75,508]});
+  /* 스타일시트 복사 (슬라이드 스타일 적용 위해) */
+  const styles=document.querySelectorAll('style,link[rel="stylesheet"]');
+  const styleClones=[];
+  styles.forEach(s=>{const c=s.cloneNode(true);frame.appendChild(c);styleClones.push(c);});
+
+  await document.fonts.ready;
 
   for(let i=0;i<slides.length;i++){
     const s=slides[i];
     fill.style.width=Math.round((i/slides.length)*100)+'%';
     text.textContent=`슬라이드 ${i+1}/${slides.length} 캡처 중...`;
 
-    frame.innerHTML='';
+    /* 이전 슬라이드 제거 (스타일은 유지) */
+    const oldDiv=frame.querySelector('.pdf-render-target');
+    if(oldDiv) oldDiv.remove();
+
     const div=document.createElement('div');
-    div.style.cssText='width:1920px;height:1080px;overflow:hidden;position:relative;';
+    div.className='pdf-render-target';
+    div.style.cssText='width:1920px;height:1080px;overflow:hidden;position:relative;background:#ffffff;';
     if(s.type==='value')    div.innerHTML=buildS1(s.data);
     if(s.type==='roadmap')  div.innerHTML=buildS2(s.data);
     if(s.type==='annual')   div.innerHTML=buildAnnual(s.data);
     if(s.type==='rrmap')    div.innerHTML=buildS3(s.data);
     if(s.type==='catdetail')div.innerHTML=buildCatDetail(s.data);
+    /* contenteditable 제거 (깔끔한 렌더) */
+    div.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
     frame.appendChild(div);
 
+    /* 렌더링 대기 */
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     await document.fonts.ready;
-    await new Promise(r=>setTimeout(r,250));
+    await new Promise(r=>setTimeout(r,400));
 
-    const canvas=await html2canvas(div,{
-      width:1920,height:1080,scale:1.5,
-      useCORS:true,allowTaint:true,
-      backgroundColor:'#ffffff',logging:false,
-    });
+    try{
+      const canvas=await html2canvas(div,{
+        width:1920,height:1080,scale:2,
+        useCORS:true,allowTaint:true,
+        backgroundColor:'#ffffff',logging:false,
+        x:0,y:0,
+        scrollX:0,scrollY:0,
+        windowWidth:1920,windowHeight:1080,
+      });
 
-    const imgData=canvas.toDataURL('image/jpeg',0.92);
-    if(i>0) pdf.addPage([285.75,508],'landscape');
-    pdf.addImage(imgData,'JPEG',0,0,508,285.75);
+      const imgData=canvas.toDataURL('image/jpeg',0.95);
+      if(i>0) pdf.addPage([pH,pW],'landscape');
+      pdf.addImage(imgData,'JPEG',0,0,pW,pH);
+    }catch(err){
+      console.error('슬라이드 캡처 실패:',i,err);
+    }
   }
 
   fill.style.width='100%';

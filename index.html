@@ -438,6 +438,18 @@ html,body{height:100%;overflow:hidden;background:#0f1a1a;font-family:'Noto Sans 
   }
 }
 #print-frame { display:none; }
+
+/* ══ PDF PROGRESS BAR ══ */
+.pdf-progress{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:99999;background:#1e2c2c;border:1px solid #2a9d8f;border-radius:16px;
+  padding:32px 48px;min-width:360px;text-align:center;
+  box-shadow:0 8px 40px rgba(0,0,0,0.6);
+}
+.pp-title{font-size:18px;font-weight:700;color:#3dbfb0;margin-bottom:16px;}
+.pp-bar{width:100%;height:12px;background:#0f1a1a;border-radius:6px;overflow:hidden;margin-bottom:12px;}
+.pp-fill{height:100%;background:linear-gradient(90deg,#1a7c6e,#3dbfb0);border-radius:6px;transition:width .3s;}
+.pp-text{font-size:13px;color:#8ab4b4;}
 </style>
 </head>
 <body>
@@ -1955,6 +1967,7 @@ async function downloadPDF(){
   const fill=document.getElementById('pdfFill');
   const text=document.getElementById('pdfText');
   prog.style.display='block';
+  try{
   fill.style.width='0%';
   text.textContent='렌더링 준비 중...';
 
@@ -2027,6 +2040,14 @@ async function downloadPDF(){
   frame.innerHTML='';
   frame.style.cssText='display:none;';
   setTimeout(()=>{prog.style.display='none';},1200);
+  }catch(e){
+    console.error('PDF 생성 오류:',e);
+    text.textContent='오류 발생: '+e.message;
+    fill.style.background='#ff4444';
+    const frame=document.getElementById('print-frame');
+    frame.innerHTML='';frame.style.cssText='display:none;';
+    setTimeout(()=>{prog.style.display='none';},3000);
+  }
 }
 
 /* ══ (슬라이드 추가 비활성화 — 향후 자료 기반 생성) ══ */

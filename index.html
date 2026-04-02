@@ -1973,85 +1973,75 @@ async function downloadPDF(){
   const fill=document.getElementById('pdfFill');
   const text=document.getElementById('pdfText');
   prog.style.display='block';
-  try{
   fill.style.width='0%';
+  fill.style.background='';
   text.textContent='렌더링 준비 중...';
 
-  /* 16:9 = 338.667mm x 190.5mm (standard widescreen) */
+  try{
+  /* 16:9 비율 PDF 페이지 */
   const pW=338.667, pH=190.5;
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:[pH,pW]});
 
-  /* 오프스크린 컨테이너: 실제로 보이게 렌더링해야 html2canvas가 정상 작동 */
-  const frame=document.getElementById('print-frame');
-  frame.innerHTML='';
-  frame.style.cssText='display:block;position:fixed;left:-9999px;top:0;width:1920px;height:1080px;z-index:99999;overflow:hidden;pointer-events:none;background:#fff;';
+  /* 메인 캔버스 영역을 활용: 현재 슬라이드 렌더러를 그대로 사용 */
+  const wrap=document.getElementById('cw');
+  const sc=document.getElementById('sc');
+  const origCur=cur;
 
-  /* 스타일시트 복사 (슬라이드 스타일 적용 위해) */
-  const styles=document.querySelectorAll('style,link[rel="stylesheet"]');
-  const styleClones=[];
-  styles.forEach(s=>{const c=s.cloneNode(true);frame.appendChild(c);styleClones.push(c);});
+  /* 슬라이드 영역을 정확히 1920x1080으로 고정 */
+  const origWrapStyle=wrap.style.cssText;
+  const origScStyle=sc.style.cssText;
+  wrap.style.cssText='width:1920px!important;height:1080px!important;overflow:hidden!important;position:fixed!important;left:0!important;top:0!important;z-index:99998!important;background:#fff!important;';
+  sc.style.cssText='width:1920px!important;height:1080px!important;transform:none!important;';
 
   await document.fonts.ready;
 
   for(let i=0;i<slides.length;i++){
-    const s=slides[i];
-    fill.style.width=Math.round((i/slides.length)*100)+'%';
+    fill.style.width=Math.round((i/slides.length)*90)+'%';
     text.textContent=`슬라이드 ${i+1}/${slides.length} 캡처 중...`;
 
-    /* 이전 슬라이드 제거 (스타일은 유지) */
-    const oldDiv=frame.querySelector('.pdf-render-target');
-    if(oldDiv) oldDiv.remove();
+    /* 슬라이드 렌더링 */
+    go(i);
+    /* contenteditable 일시 제거 */
+    const editables=sc.querySelectorAll('[contenteditable]');
+    editables.forEach(el=>el.setAttribute('contenteditable','false'));
 
-    const div=document.createElement('div');
-    div.className='pdf-render-target';
-    div.style.cssText='width:1920px;height:1080px;overflow:hidden;position:relative;background:#ffffff;';
-    if(s.type==='value')    div.innerHTML=buildS1(s.data);
-    if(s.type==='roadmap')  div.innerHTML=buildS2(s.data);
-    if(s.type==='annual')   div.innerHTML=buildAnnual(s.data);
-    if(s.type==='rrmap')    div.innerHTML=buildS3(s.data);
-    if(s.type==='catdetail')div.innerHTML=buildCatDetail(s.data);
-    /* contenteditable 제거 (깔끔한 렌더) */
-    div.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
-    frame.appendChild(div);
-
-    /* 렌더링 대기 */
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     await document.fonts.ready;
-    await new Promise(r=>setTimeout(r,400));
+    await new Promise(r=>setTimeout(r,500));
 
-    try{
-      const canvas=await html2canvas(div,{
-        width:1920,height:1080,scale:2,
-        useCORS:true,allowTaint:true,
-        backgroundColor:'#ffffff',logging:false,
-        x:0,y:0,
-        scrollX:0,scrollY:0,
-        windowWidth:1920,windowHeight:1080,
-      });
+    const canvas=await html2canvas(sc,{
+      width:1920,height:1080,scale:2,
+      useCORS:true,allowTaint:true,
+      backgroundColor:null,logging:false,
+      x:0,y:0,scrollX:0,scrollY:0,
+      windowWidth:1920,windowHeight:1080,
+    });
 
-      const imgData=canvas.toDataURL('image/jpeg',0.95);
-      if(i>0) pdf.addPage([pH,pW],'landscape');
-      pdf.addImage(imgData,'JPEG',0,0,pW,pH);
-    }catch(err){
-      console.error('슬라이드 캡처 실패:',i,err);
-    }
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    if(i>0) pdf.addPage([pH,pW],'landscape');
+    pdf.addImage(imgData,'JPEG',0,0,pW,pH);
+
+    /* contenteditable 복원 */
+    editables.forEach(el=>el.setAttribute('contenteditable','true'));
   }
+
+  /* 원래 상태 복원 */
+  wrap.style.cssText=origWrapStyle;
+  sc.style.cssText=origScStyle;
+  go(origCur);
+  fz();
 
   fill.style.width='100%';
   text.textContent='PDF 저장 중...';
   await new Promise(r=>setTimeout(r,100));
   pdf.save('Learning_Roadmap.pdf');
-
-  frame.innerHTML='';
-  frame.style.cssText='display:none;';
   setTimeout(()=>{prog.style.display='none';},1200);
+
   }catch(e){
     console.error('PDF 생성 오류:',e);
     text.textContent='오류 발생: '+e.message;
     fill.style.background='#ff4444';
-    const frame=document.getElementById('print-frame');
-    frame.innerHTML='';frame.style.cssText='display:none;';
     setTimeout(()=>{prog.style.display='none';},3000);
   }
 }
